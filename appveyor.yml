@@ -1,29 +1,15 @@
-version: 1.0.0.{build}
+# appveyor.yml
+build: off
 
-platform: x64
-
-branches:
-  only:
-    - master
-
-clone_folder: c:\gopath\src\github.com\account\myproject
+clone_folder: /usr/go/src/gitote.in/dimensi0n/persona
 
 environment:
-  GOPATH: c:\gopath
+  GOPATH: /usr/go/
 
-install:
-  - echo %PATH%
-  - echo %GOPATH%
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
-  - go version
-  - go env
+stack: go 1.10
 
-build_script:
-  - go build -o buildOutput\myapp -i .
+before_test:
+  - go vet ./...
 
-build_script:
-  - ps: .\build.ps1
-
-artifacts:
-  - path: buildOutput/myapp
-    name: binary
+test_script:
+  - go test ./...
