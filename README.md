@@ -16,7 +16,7 @@ Persona is not for everyone; if your login system is too complex and relies on m
 7. Create sessions
 
 ## What does it NOT do?
-3. Does not verify email
+3. Does not verify email.
 
 ## How to use it
 
