@@ -1,3 +1,4 @@
+// Package persona provides user mangement fonctions
 package persona
 
 import (
@@ -119,13 +120,13 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 }
 
 // LoginWithUsername logs in user with username
-func LoginWithUsername(username string, password string, w http.ResponseWriter) error {
+func LoginWithUsername(username string, password string, r *http.Request) error {
 	fmt.Printf("%s", username)
 	return nil
 }
 
 // LoginWithEmail logs in user with email
-func LoginWithEmail(email string, password string, w http.ResponseWriter) error {
+func LoginWithEmail(email string, password string, r *http.Request) error {
 	fmt.Printf("%s", email)
 	return nil
 }
