@@ -56,7 +56,7 @@ if err := nil {
 
 // Email/Password
 user := User{Email: "mail@mail.com", Password: "Password"}
-err := persona.LoginWithEmail(user.Mail, user.Password, w) // email is the UID field && w is the response writer
+err := persona.LoginWithEmail(user.Mail, user.Password, r) // email is the UID field && r is the request pointer
 if err := nil {
     // ERROR 
 }
@@ -66,11 +66,12 @@ if err := nil {
 
 ```golang
 user := User{Username: "Username", Password: "Password"}
-persona.Logout(user.Username, w) // w is the response writer
+persona.Logout(user.Username, r) // r is the request pointer
+```
 
 ### Get current user
 
 ```golang
 var user User
-personna.CurrentUser(&user, r) // r is the request
+personna.CurrentUser(&user, r) // r is the request pointer
 ```
