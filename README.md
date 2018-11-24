@@ -49,22 +49,28 @@ if err := nil {
 ```golang
 // Username/Password
 user := User{Username: "Username", Password: "Password"}
-err := persona.Login(&user, "username")
+err := persona.Login(&user, "username", c) // username is the UID field && w is the response writer
 if err := nil {
     // ERROR 
 }
 
 // Email/Password
 user := User{Email: "mail@mail.com", Password: "Password"}
-err := persona.Login(&user, "email")
+err := persona.Login(&user, "email", w) // email is the UID field && w is the response writer
 if err := nil {
     // ERROR 
 }
 ```
 
+### Logout
+
+```golang
+user := User{Username: "Username", Password: "Password"}
+persona.Logout(&user, w) // w is the response writer
+
 ### Get current user
 
 ```golang
 var user User
-personna.CurrentUser(&user)
+personna.CurrentUser(&user, r) // r is the request
 ```
