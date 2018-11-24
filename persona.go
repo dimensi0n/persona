@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	maths "math/rand"
 	"net/http"
@@ -19,8 +18,7 @@ import (
 // Session struct
 type Session struct {
 	gorm.Model
-	Username string
-	Key      []byte
+	Username string `gorm:"not null;unique"`
 	Token    string
 }
 
@@ -89,14 +87,7 @@ func decrypt(key []byte, securemess string) (decodedmess string, err error) {
 	return
 }
 
-// Config Persona
-func Config(db *gorm.DB) {
-	database = db
-	database.AutoMigrate(&Session{})
-}
-
-// Signup register the user
-func Signup(user interface{}, username string, w http.ResponseWriter) error {
+func createCookie(username string, w http.ResponseWriter) error {
 	key := []byte(randStringBytes(32))
 
 	encrypted, err := encrypt(key, username)
@@ -111,8 +102,21 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 	}
 	http.SetCookie(w, &cookie)
 
-	userSession := Session{Username: username, Key: key, Token: encrypted}
+	userSession := Session{Username: username, Token: encrypted}
 	database.Create(&userSession)
+
+	return nil
+}
+
+// Config Persona
+func Config(db *gorm.DB) {
+	database = db
+	database.AutoMigrate(&Session{})
+}
+
+// Signup register the user
+func Signup(user interface{}, username string, w http.ResponseWriter) error {
+	createCookie(username, w)
 
 	database.Create(user)
 
@@ -120,13 +124,39 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 }
 
 // LoginWithUsername logs in user with username
-func LoginWithUsername(username string, password string, r *http.Request) error {
-	fmt.Printf("%s", username)
+func LoginWithUsername(username string, password string, w http.ResponseWriter, r *http.Request) error {
+	cookie, _ := r.Cookie("session-persona")
+	var session Session
+	database.Where("token = ?", cookie).First(&session)
+	if (Session{}) == session {
+		var user interface{}
+		database.Where("username = ? AND password = ?", username, password).First(&user)
+		if user != nil {
+			if err := createCookie(username, w); err != nil {
+				return err
+			}
+		} else {
+			return errors.New("user doesn't exist")
+		}
+	}
 	return nil
 }
 
 // LoginWithEmail logs in user with email
-func LoginWithEmail(email string, password string, r *http.Request) error {
-	fmt.Printf("%s", email)
+func LoginWithEmail(email string, password string, w http.ResponseWriter, r *http.Request) error {
+	cookie, _ := r.Cookie("session-persona")
+	var session Session
+	database.Where("token = ?", cookie).First(&session)
+	if (Session{}) == session {
+		var user interface{}
+		database.Where("email = ? AND password = ?", email, password).First(&user)
+		if user != nil {
+			if err := createCookie(email, w); err != nil {
+				return err
+			}
+		} else {
+			return errors.New("user doesn't exist")
+		}
+	}
 	return nil
 }

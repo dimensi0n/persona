@@ -11,8 +11,8 @@ import (
 
 type User struct {
 	gorm.Model        // REQUIRED
-	Username   string // REQUIRED
-	Password   string // REQUIRED
+	Username   string `gorm:"not null"`        // REQUIRED
+	Password   string `gorm:"not null"`        // REQUIRED
 	Mail       string `gorm:"not null;unique"` // REQUIRED
 	Loggedin   bool   `gorm:"default:false"`   // REQUIRED
 }
