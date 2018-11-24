@@ -1,5 +1,8 @@
 # persona
 
+[![GoDoc](https://godoc.org/gitote.in/dimensi0n/persona?status.svg)](https://godoc.org/gitote.in/dimensi0n/persona)
+[![GoReport](https://goreportcard.com/badge/gitote.in/dimensi0n/persona)](https://goreportcard.com/report/gitote.in/dimensi0n/persona)
+
 > User management library written in Go
 
 ## What is Persona?
