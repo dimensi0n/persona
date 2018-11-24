@@ -47,7 +47,13 @@ defer db.Close()
 
 db.AutoMigrate(&User{})
 
-persona.Config(db)
+// If uid field is "username"
+// If your users connect them with their username
+persona.Config(db, "username")
+
+// If uid field is "email"
+// If your users connect them with their email
+persona.Config(db, "email")
 ```
 
 ### Signup
