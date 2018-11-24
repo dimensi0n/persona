@@ -144,36 +144,27 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 
 // Login logs in the user
 func Login(uid string, password string, w http.ResponseWriter, r *http.Request) error {
-	cookie, _ := r.Cookie("session-persona")
 	if uid == "username" {
-		var session SessionUname
-		database.Where("token = ?", cookie).First(&session)
-		if (SessionUname{}) == session {
-			var user interface{}
-			database.Table("users").Where("username = ? AND password = ?", uid, password).First(&user)
-			if user != nil {
-				if err := createCookie(uid, w); err != nil {
-					return err
-				}
-				database.Table("users").Where("username = ? AND password = ?", uid, password).Update(map[string]interface{}{"loggedin": true})
-			} else {
-				return errors.New("user doesn't exist")
+		var user interface{}
+		database.Table("users").Where("username = ? AND password = ?", uid, password).First(&user)
+		if user != nil {
+			if err := createCookie(uid, w); err != nil {
+				return err
 			}
+			database.Table("users").Where("username = ? AND password = ?", uid, password).Update(map[string]interface{}{"loggedin": true})
+		} else {
+			return errors.New("user doesn't exist")
 		}
 	} else if uid == "email" {
-		var session SessionEmail
-		database.Where("token = ?", cookie).First(&session)
-		if (SessionEmail{}) == session {
-			var user interface{}
-			database.Where("email = ? AND password = ?", uid, password).First(&user)
-			if user != nil {
-				if err := createCookie(uid, w); err != nil {
-					return err
-				}
-				database.Where("email = ? AND password = ?", uid, password).Update("loggedin", true)
-			} else {
-				return errors.New("user doesn't exist")
+		var user interface{}
+		database.Where("email = ? AND password = ?", uid, password).First(&user)
+		if user != nil {
+			if err := createCookie(uid, w); err != nil {
+				return err
 			}
+			database.Where("email = ? AND password = ?", uid, password).Update("loggedin", true)
+		} else {
+			return errors.New("user doesn't exist")
 		}
 	}
 
