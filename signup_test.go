@@ -1,6 +1,7 @@
 package persona
 
 import (
+	"errors"
 	"net/http/httptest"
 	"testing"
 
@@ -34,5 +35,10 @@ func TestSignup(t *testing.T) {
 	err = Signup(&user, user.Username, w)
 	if err != nil {
 		t.Error(err)
+	}
+
+	resp := w.Result()
+	if resp.Header.Get("Set-Cookie") == "" {
+		t.Error(errors.New("no session cookie"))
 	}
 }
