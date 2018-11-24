@@ -34,6 +34,22 @@ type User struct {
 }
 ```
 
+### Config
+
+You'll need to configure Persona. This is an example
+
+```golang
+db, err := gorm.Open("sqlite3", "gorm.db")
+if err != nil {
+	// ERROR
+}
+defer db.Close()
+
+db.AutoMigrate(&User{})
+
+persona.Config(db)
+```
+
 ### Signup
 
 ```golang
