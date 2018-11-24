@@ -26,11 +26,11 @@ Use this model template and add what you want
 
 ```golang
 type User struct {
-    gorm.Model       // REQUIRED
-    Username  string // REQUIRED
-    Password  string // REQUIRED
-    Mail      string `gorm:"not null;unique"` // REQUIRED
-    Loggedin  bool // REQUIRED
+	gorm.Model        // REQUIRED
+	Username   string // REQUIRED
+	Password   string // REQUIRED
+	Mail       string `gorm:"not null;unique"` // REQUIRED
+	Loggedin   bool   `gorm:"default:false"`   // REQUIRED
 }
 ```
 
@@ -38,7 +38,7 @@ type User struct {
 
 ```golang
 user := User{"Username", "Pasword", "mail@mail.com"}
-err := persona.Signup(&user, user.Username, user.Password, user.Mail, w) // &user is the struct to save && w is the response writer
+err := persona.Signup(&user, user.Username, w) // &user is the struct to save && w is the response writer
 if err := nil {
     // ERROR 
 }

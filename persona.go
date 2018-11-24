@@ -15,11 +15,12 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type session struct {
+// Session struct
+type Session struct {
 	gorm.Model
-	username string
-	key      []byte
-	token    string
+	Username string
+	Key      []byte
+	Token    string
 }
 
 var database *gorm.DB
@@ -70,7 +71,7 @@ func decrypt(key []byte, securemess string) (decodedmess string, err error) {
 	}
 
 	if len(cipherText) < aes.BlockSize {
-		err = errors.New("Ciphertext block size is too short!")
+		err = errors.New("ciphertext block size is too short")
 		return
 	}
 
@@ -90,7 +91,7 @@ func decrypt(key []byte, securemess string) (decodedmess string, err error) {
 // Config Persona
 func Config(db *gorm.DB) {
 	database = db
-	database.AutoMigrate(&session{})
+	database.AutoMigrate(&Session{})
 }
 
 // Signup register the user
@@ -103,10 +104,13 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 	}
 
 	expiration := time.Now().Add(365 * 24 * time.Hour)
-	cookie := http.Cookie{Name: "session", Value: encrypted, Expires: expiration}
+	cookie := http.Cookie{Name: "session-persona", Value: encrypted, Expires: expiration}
+	if w == nil {
+		return errors.New("response writer is not nullable")
+	}
 	http.SetCookie(w, &cookie)
 
-	userSession := session{username: username, key: key, token: encrypted}
+	userSession := Session{Username: username, Key: key, Token: encrypted}
 	database.Create(&userSession)
 
 	database.Create(user)
