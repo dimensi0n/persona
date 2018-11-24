@@ -29,8 +29,8 @@ type User struct {
     gorm.Model       // REQUIRED
     Username  string // REQUIRED
     Password  string // REQUIRED
-    Mail      string // REQUIRED
-    Session   string // REQUIRED
+    Mail      string `gorm:"not null;unique"` // REQUIRED
+    Loggedin  bool // REQUIRED
 }
 ```
 
@@ -38,7 +38,7 @@ type User struct {
 
 ```golang
 user := User{"Username", "Pasword", "mail@mail.com"}
-err := persona.Signup(&user)
+err := persona.Signup(&user, user.Username, user.Password, user.Mail, w) // &user is the struct to save && w is the response writer
 if err := nil {
     // ERROR 
 }
@@ -49,14 +49,14 @@ if err := nil {
 ```golang
 // Username/Password
 user := User{Username: "Username", Password: "Password"}
-err := persona.Login(&user, "username", c) // username is the UID field && w is the response writer
+err := persona.LoginWithUsername(user.Username, user.Password, w) // &user is the struct to save username is the UID field && w is the response writer
 if err := nil {
     // ERROR 
 }
 
 // Email/Password
 user := User{Email: "mail@mail.com", Password: "Password"}
-err := persona.Login(&user, "email", w) // email is the UID field && w is the response writer
+err := persona.LoginWithEmail(user.Mail, user.Password, w) // email is the UID field && w is the response writer
 if err := nil {
     // ERROR 
 }
@@ -66,7 +66,7 @@ if err := nil {
 
 ```golang
 user := User{Username: "Username", Password: "Password"}
-persona.Logout(&user, w) // w is the response writer
+persona.Logout(user.Username, w) // w is the response writer
 
 ### Get current user
 
