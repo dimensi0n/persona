@@ -34,7 +34,7 @@ type User struct {
 	Username   string // REQUIRED
 	Password   string // REQUIRED
 	Mail       string `gorm:"not null;unique"` // REQUIRED
-	Loggedin   bool   `gorm:"default:false"`   // REQUIRED
+	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
 }
 ```
 
@@ -66,7 +66,7 @@ persona.Config(db, "email")
 user := User{"Username", "Pasword", "mail@mail.com"}
 err := persona.Signup(&user, user.Username, w) // &user is the struct to save && w is the response writer
 if err := nil {
-    // ERROR 
+    // There is an error while attempting to signup the user 
 }
 ```
 
@@ -75,29 +75,41 @@ if err := nil {
 ```golang
 // Username/Password
 user := User{Username: "Username", Password: "Password"}
-err := persona.LoginWithUsername(user.Username, user.Password, w) // &user is the struct to save username is the UID field && w is the response writer
+err := persona.Login(user.Username, user.Password, w) // &user is the struct to save username is the UID field && w is the response writer
 if err := nil {
-    // ERROR 
+    // User credentials are false
 }
 
 // Email/Password
 user := User{Email: "mail@mail.com", Password: "Password"}
-err := persona.LoginWithEmail(user.Mail, user.Password, r) // email is the UID field && r is the request pointer
+err := persona.Login(user.Mail, user.Password, w) // email is the UID field && w is the response writer
 if err := nil {
-    // ERROR 
+    // User credentials are false 
 }
 ```
 
 ### Logout
 
 ```golang
+// Username/Password
 user := User{Username: "Username", Password: "Password"}
-persona.Logout(user.Username, r) // r is the request pointer
+err := persona.Logout(user.Username, r) // r is the request pointer
+if err := nil {
+    // There is an error while attempting to logout the user 
+}
+
+user := User{Mail: "mail@mail.com", Password: "Password"}
+err := persona.Logout(user.Mail, r) // r is the request pointer
+if err := nil {
+    // There is an error while attempting to logout the user 
+}
 ```
 
 ### Get current user
 
 ```golang
-var user User
-personna.CurrentUser(&user, r) // r is the request pointer
+username, err := personna.CurrentUser(r) // r is the request pointer
+if err != nil {
+	// No user is logged in
+}
 ```
