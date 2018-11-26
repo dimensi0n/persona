@@ -148,7 +148,7 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 }
 
 // Login logs in the user
-func Login(uid string, password string, w http.ResponseWriter, r *http.Request) error {
+func Login(uid string, password string, w http.ResponseWriter) error {
 	if suid == "username" {
 		var user struct {
 			Username string
@@ -175,6 +175,16 @@ func Login(uid string, password string, w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	return nil
+}
+
+// Logout logs out the user
+func Logout(uid string, r *http.Request) error {
+	if suid == "username" {
+		//
+	} else if suid == "email" {
+		//
+	}
 	return nil
 }
 

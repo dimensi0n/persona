@@ -61,13 +61,7 @@ func TestLogin(t *testing.T) {
 
 	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
 
-	/*var session Sessionusername
-	db.Where("username = ?", user.Username).First(&session)
-
-	http.SetCookie(w, &http.Cookie{Name: "test", Value: session.Token})*/
-	r := &http.Request{Header: http.Header{}}
-
-	err = Login(user.Username, user.Password, w, r)
+	err = Login(user.Username, user.Password, w)
 	if err != nil {
 		t.Error(err)
 	}
