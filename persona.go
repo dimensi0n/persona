@@ -15,15 +15,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// SessionUname struct
-type SessionUname struct {
+// Sessionusername struct
+type Sessionusername struct {
 	gorm.Model
-	Username string `gorm:"not null;unique"`
+	Username string `gorm:"not null;"`
 	Token    string
 }
 
-// SessionEmail struct
-type SessionEmail struct {
+// Sessionemail struct
+type Sessionemail struct {
 	gorm.Model
 	Mail  string `gorm:"not null;unique"`
 	Token string
@@ -31,7 +31,7 @@ type SessionEmail struct {
 
 var (
 	database *gorm.DB
-	uid      string
+	suid     string
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -112,11 +112,15 @@ func createCookie(username string, w http.ResponseWriter) error {
 	}
 	http.SetCookie(w, &cookie)
 
-	if uid == "username" {
-		userSession := SessionUname{Username: username, Token: encrypted}
+	if suid == "username" {
+		var user Sessionusername
+		database.Where("username = ?", username).First(&user).Delete(&user)
+		userSession := Sessionusername{Username: username, Token: encrypted}
 		database.Create(&userSession)
-	} else if uid == "email" {
-		userSession := SessionEmail{Mail: username, Token: encrypted}
+	} else if suid == "email" {
+		var user Sessionemail
+		database.Where("mail = ?", username).First(&user).Delete(&user)
+		userSession := Sessionemail{Mail: username, Token: encrypted}
 		database.Create(&userSession)
 	}
 
@@ -124,12 +128,13 @@ func createCookie(username string, w http.ResponseWriter) error {
 }
 
 // Config Persona
-func Config(db *gorm.DB, uid string) {
+func Config(db *gorm.DB, newUID string) {
 	database = db
-	if uid == "username" {
-		database.AutoMigrate(&SessionUname{})
-	} else if uid == "email" {
-		database.AutoMigrate(&SessionEmail{})
+	suid = newUID
+	if suid == "username" {
+		database.AutoMigrate(&Sessionusername{})
+	} else if suid == "email" {
+		database.AutoMigrate(&Sessionemail{})
 	}
 }
 
@@ -144,10 +149,11 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 
 // Login logs in the user
 func Login(uid string, password string, w http.ResponseWriter, r *http.Request) error {
-	if uid == "username" {
-		var user interface{}
-		database.Table("users").Where("username = ? AND password = ?", uid, password).First(&user)
-		if user != nil {
+	if suid == "username" {
+		var user struct {
+			Username string
+		}
+		if !database.Table("users").Where("username = ? AND password = ?", uid, password).First(&user).RecordNotFound() {
 			if err := createCookie(uid, w); err != nil {
 				return err
 			}
@@ -155,18 +161,41 @@ func Login(uid string, password string, w http.ResponseWriter, r *http.Request) 
 		} else {
 			return errors.New("user doesn't exist")
 		}
-	} else if uid == "email" {
-		var user interface{}
-		database.Where("email = ? AND password = ?", uid, password).First(&user)
-		if user != nil {
+	} else if suid == "email" {
+		var user struct {
+			Mail string
+		}
+		if !database.Table("users").Where("mail = ? AND password = ?", uid, password).First(&user).RecordNotFound() {
 			if err := createCookie(uid, w); err != nil {
 				return err
 			}
-			database.Where("email = ? AND password = ?", uid, password).Update("loggedin", true)
+			database.Table("users").Where("mail = ? AND password = ?", uid, password).Update(map[string]interface{}{"loggedin": true})
 		} else {
 			return errors.New("user doesn't exist")
 		}
 	}
 
 	return nil
+}
+
+// GetCurrentUser returns current user username/email
+func GetCurrentUser(r *http.Request) (string, error) {
+	if suid == "username" {
+		cookie, _ := r.Cookie("session-persona")
+		var session Sessionusername
+		database.Table("sessionusernames").Where("token = ?", cookie.Value).First(&session)
+		if (Sessionusername{}) == session {
+			return "", errors.New("no user loggedin")
+		}
+		return session.Username, nil
+	} else if suid == "email" {
+		cookie, _ := r.Cookie("session-persona")
+		var session Sessionemail
+		database.Table("sessionemails").Where("token = ?", cookie.Value).First(&session)
+		if (Sessionemail{}) == session {
+			return "", errors.New("no user loggedin")
+		}
+		return session.Mail, nil
+	}
+	return "", nil
 }

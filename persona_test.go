@@ -15,7 +15,7 @@ type User struct {
 	Username   string // REQUIRED
 	Password   string // REQUIRED
 	Mail       string `gorm:"not null;unique"` // REQUIRED
-	Loggedin   bool   `gorm:"default:false"`   // REQUIRED
+	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
 }
 
 func TestSignup(t *testing.T) {
@@ -29,7 +29,7 @@ func TestSignup(t *testing.T) {
 	defer db.Close()
 
 	db.DropTable(&User{})
-	db.DropTable(&SessionUname{})
+	db.DropTable(&Sessionusername{})
 
 	db.AutoMigrate(&User{})
 
@@ -61,7 +61,7 @@ func TestLogin(t *testing.T) {
 
 	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
 
-	/*var session SessionUname
+	/*var session Sessionusername
 	db.Where("username = ?", user.Username).First(&session)
 
 	http.SetCookie(w, &http.Cookie{Name: "test", Value: session.Token})*/
@@ -72,9 +72,36 @@ func TestLogin(t *testing.T) {
 		t.Error(err)
 	}
 
-	database.Table("users").Where("username = ? AND password = ?", "Erwan", "0000").Update(map[string]interface{}{"loggedin": true})
-	var newUs User
-	database.Table("users").Where("username = ? AND password = ?", user.Username, user.Password).First(&newUs)
-	t.Log(newUs)
-	println(newUs.Loggedin)
+	resp := w.Result()
+	if resp.Header.Get("Set-Cookie") == "" {
+		t.Error(errors.New("no session cookie"))
+	}
+}
+
+func TestCurrentUser(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	Config(db, "username")
+
+	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+
+	var session Sessionusername
+	db.Table("sessionusernames").Where("username = ?", user.Username).First(&session)
+
+	http.SetCookie(w, &http.Cookie{Name: "session-persona", Value: session.Token})
+	r := &http.Request{Header: http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}}
+
+	username, err := GetCurrentUser(r)
+	if err != nil {
+		t.Error(err)
+	}
+	if username == "" {
+		t.Error("no user loggedin")
+	}
 }
