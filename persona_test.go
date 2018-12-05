@@ -10,14 +10,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-type User struct {
-	gorm.Model        // REQUIRED
-	Username   string // REQUIRED
-	Password   string // REQUIRED
-	Mail       string `gorm:"not null;unique"` // REQUIRED
-	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
-}
-
 func TestSignup(t *testing.T) {
 
 	w := httptest.NewRecorder()

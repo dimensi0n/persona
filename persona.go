@@ -15,6 +15,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// User default struct
+type User struct {
+	gorm.Model        // REQUIRED
+	Username   string // REQUIRED
+	Password   string // REQUIRED
+	Mail       string `gorm:"not null;unique"` // REQUIRED
+	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
+}
+
 // Sessionusername struct
 type Sessionusername struct {
 	gorm.Model
@@ -114,12 +123,12 @@ func createCookie(username string, w http.ResponseWriter) error {
 
 	if suid == "username" {
 		var user Sessionusername
-		database.Where("username = ?", username).First(&user).Delete(&user)
+		database.Table("sessionusernames").Where("username = ?", username).First(&user).Delete(&user)
 		userSession := Sessionusername{Username: username, Token: encrypted}
 		database.Create(&userSession)
 	} else if suid == "email" {
 		var user Sessionemail
-		database.Where("mail = ?", username).First(&user).Delete(&user)
+		database.Table("sessionemails").Where("mail = ?", username).First(&user).Delete(&user)
 		userSession := Sessionemail{Mail: username, Token: encrypted}
 		database.Create(&userSession)
 	}
@@ -181,9 +190,11 @@ func Login(uid string, password string, w http.ResponseWriter) error {
 // Logout logs out the user
 func Logout(uid string, r *http.Request) error {
 	if suid == "username" {
-		//
+		var session Sessionusername
+		database.Table("sessionusernames").Where("username = ?", uid).First(&session).Delete(&session)
 	} else if suid == "email" {
-		//
+		var session Sessionemail
+		database.Table("sessionemails").Where("mail = ?", uid).First(&session).Delete(&session)
 	}
 	return nil
 }

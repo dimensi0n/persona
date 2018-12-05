@@ -30,11 +30,7 @@ Use this model template and add what you want
 
 ```golang
 type User struct {
-	gorm.Model        // REQUIRED
-	Username   string // REQUIRED
-	Password   string // REQUIRED
-	Mail       string `gorm:"not null;unique"` // REQUIRED
-	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
+	persona.User
 }
 ```
 
@@ -93,13 +89,13 @@ if err := nil {
 ```golang
 // Username/Password
 user := User{Username: "Username", Password: "Password"}
-err := persona.Logout(user.Username, r) // r is the request pointer
+err := persona.Logout(user.Username, w) // w is the response writer
 if err := nil {
     // There is an error while attempting to logout the user 
 }
 
 user := User{Mail: "mail@mail.com", Password: "Password"}
-err := persona.Logout(user.Mail, r) // r is the request pointer
+err := persona.Logout(user.Mail, w) // w is the response writer
 if err := nil {
     // There is an error while attempting to logout the user 
 }
