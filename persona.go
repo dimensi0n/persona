@@ -188,13 +188,15 @@ func Login(uid string, password string, w http.ResponseWriter) error {
 }
 
 // Logout logs out the user
-func Logout(uid string, r *http.Request) error {
+func Logout(uid string, w http.ResponseWriter) error {
 	if suid == "username" {
 		var session Sessionusername
 		database.Table("sessionusernames").Where("username = ?", uid).First(&session).Delete(&session)
+		http.SetCookie(w, &http.Cookie{Name: "session-persona", Expires: time.Unix(0, 0)})
 	} else if suid == "email" {
 		var session Sessionemail
 		database.Table("sessionemails").Where("mail = ?", uid).First(&session).Delete(&session)
+		http.SetCookie(w, &http.Cookie{Name: "session-persona", Expires: time.Unix(0, 0)})
 	}
 	return nil
 }
@@ -219,4 +221,9 @@ func GetCurrentUser(r *http.Request) (string, error) {
 		return session.Mail, nil
 	}
 	return "", nil
+}
+
+// RecoverPassword recovers the user password
+func RecoverPassword(uid string, old_password string, new_password string) error {
+	return nil
 }
