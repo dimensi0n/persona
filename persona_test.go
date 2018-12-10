@@ -34,7 +34,7 @@ func TestSignup(t *testing.T) {
 	}
 
 	resp := w.Result()
-	if resp.Header.Get("Set-Cookie") == "" {
+	if resp.Cookies()[0].Value == "" {
 		t.Error(errors.New("no session cookie"))
 	}
 }
@@ -59,7 +59,7 @@ func TestLogout(t *testing.T) {
 
 	resp := w.Result()
 	if resp.Cookies()[0].Value != "" {
-		t.Error(errors.New(resp.Cookies()[0].Value))
+		t.Error(errors.New("cookie was not deleted"))
 	}
 }
 
@@ -83,7 +83,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	resp := w.Result()
-	if resp.Header.Get("Set-Cookie") == "" {
+	if resp.Cookies()[0].Value == "" {
 		t.Error(errors.New("no session cookie"))
 	}
 }
@@ -111,7 +111,32 @@ func TestCurrentUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	if username == "" {
 		t.Error("no user loggedin")
+	}
+}
+
+func TestRecoverPassword(t *testing.T) {
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	Config(db, "username")
+
+	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+
+	err = RecoverPassword(user.Username, user.Password, "0001")
+	if err != nil {
+		t.Error(err)
+	}
+
+	var updatedUser User
+	db.Table("users").Where("username = ?", user.Username).First(&updatedUser)
+
+	if updatedUser.Password != "0001" {
+		t.Error(errors.New("password wasn't changed"))
 	}
 }
