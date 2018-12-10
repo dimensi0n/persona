@@ -224,6 +224,21 @@ func GetCurrentUser(r *http.Request) (string, error) {
 }
 
 // RecoverPassword recovers the user password
-func RecoverPassword(uid string, old_password string, new_password string) error {
+func RecoverPassword(uid string, oldPassword string, newPassword string) error {
+	if suid == "username" {
+		var user User
+		if !database.Table("users").Where("username = ? AND password = ?", uid, oldPassword).First(&user).RecordNotFound() {
+			database.Table("users").Where("username = ? AND password = ?", uid, oldPassword).Update(map[string]interface{}{"password": newPassword})
+		} else {
+			return errors.New("user doesn't exist")
+		}
+	} else if suid == "email" {
+		var user User
+		if !database.Table("users").Where("mail = ? AND password = ?", uid, oldPassword).First(&user).RecordNotFound() {
+			database.Table("users").Where("mail = ? AND password = ?", uid, oldPassword).Update(map[string]interface{}{"password": newPassword})
+		} else {
+			return errors.New("user doesn't exist")
+		}
+	}
 	return nil
 }
