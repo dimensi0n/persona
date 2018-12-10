@@ -109,3 +109,21 @@ if err != nil {
 	// No user is logged in
 }
 ```
+
+### Recover password
+
+```golang
+// Username/Password
+user := User{Username: "Username", Password: "Password"}
+err := persona.RecoverPassword(user.Username, user.Password, "new password")
+if err != nil {
+    // There is an error while attemting to change user password
+}
+
+// Email/Password
+user := User{Mail: "mail@mail.com", Password: "Password"}
+err := persona.RecoverPassword(user.Mail, user.Password, "new password")
+if err != nil {
+    // There is an error while attemting to change user password
+}
+```
