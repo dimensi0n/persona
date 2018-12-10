@@ -39,6 +39,30 @@ func TestSignup(t *testing.T) {
 	}
 }
 
+func TestLogout(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	Config(db, "username")
+
+	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+
+	err = Logout(user.Username, w)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp := w.Result()
+	if resp.Cookies()[0].Value != "" {
+		t.Error(errors.New(resp.Cookies()[0].Value))
+	}
+}
+
 func TestLogin(t *testing.T) {
 
 	w := httptest.NewRecorder()
