@@ -20,7 +20,7 @@ Persona is not for everyone; if your login system is too complex and relies on m
 7. Create sessions
 
 ## What does it NOT do?
-3. Does not verify email.
+3. Does not verify or send email.
 
 ## How to use it
 
@@ -31,6 +31,17 @@ Use this model template and add what you want
 ```golang
 type User struct {
 	persona.User
+}
+```
+
+this is equivalent to :
+```golang
+type User struct {
+	gorm.Model        // REQUIRED
+	Username   string // REQUIRED
+	Password   string // REQUIRED
+	Mail       string `gorm:"not null;unique"` // REQUIRED
+	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
 }
 ```
 
