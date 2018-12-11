@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User default struct
 type User struct {
 	gorm.Model        // REQUIRED
-	Username   string // REQUIRED
+	Username   string `gorm:"not null;unique"` // REQUIRED
 	Password   string // REQUIRED
 	Mail       string `gorm:"not null;unique"` // REQUIRED
 	Loggedin   bool   `gorm:"default:true"`    // REQUIRED
@@ -147,6 +148,17 @@ func Config(db *gorm.DB, newUID string) {
 	}
 }
 
+// HashPassword hashes the password before saving it
+func HashPassword(password string) string {
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes)
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
 // Signup register the user
 func Signup(user interface{}, username string, w http.ResponseWriter) error {
 	createCookie(username, w)
@@ -159,26 +171,28 @@ func Signup(user interface{}, username string, w http.ResponseWriter) error {
 // Login logs in the user
 func Login(uid string, password string, w http.ResponseWriter) error {
 	if suid == "username" {
-		var user struct {
-			Username string
-		}
-		if !database.Table("users").Where("username = ? AND password = ?", uid, password).First(&user).RecordNotFound() {
-			if err := createCookie(uid, w); err != nil {
-				return err
+		var user User
+		if !database.Table("users").Where("username = ?", uid).First(&user).RecordNotFound() {
+			passwordVerified := checkPasswordHash(password, user.Password)
+			if passwordVerified {
+				if err := createCookie(uid, w); err != nil {
+					return err
+				}
+				database.Table("users").Where("username = ?", uid).Update(map[string]interface{}{"loggedin": true})
 			}
-			database.Table("users").Where("username = ? AND password = ?", uid, password).Update(map[string]interface{}{"loggedin": true})
 		} else {
 			return errors.New("user doesn't exist")
 		}
 	} else if suid == "email" {
-		var user struct {
-			Mail string
-		}
-		if !database.Table("users").Where("mail = ? AND password = ?", uid, password).First(&user).RecordNotFound() {
-			if err := createCookie(uid, w); err != nil {
-				return err
+		var user User
+		if !database.Table("users").Where("mail = ?", uid).First(&user).RecordNotFound() {
+			passwordVerified := checkPasswordHash(password, user.Password)
+			if passwordVerified {
+				if err := createCookie(uid, w); err != nil {
+					return err
+				}
+				database.Table("users").Where("mail = ?", uid).Update(map[string]interface{}{"loggedin": true})
 			}
-			database.Table("users").Where("mail = ? AND password = ?", uid, password).Update(map[string]interface{}{"loggedin": true})
 		} else {
 			return errors.New("user doesn't exist")
 		}
@@ -227,15 +241,21 @@ func GetCurrentUser(r *http.Request) (string, error) {
 func RecoverPassword(uid string, oldPassword string, newPassword string) error {
 	if suid == "username" {
 		var user User
-		if !database.Table("users").Where("username = ? AND password = ?", uid, oldPassword).First(&user).RecordNotFound() {
-			database.Table("users").Where("username = ? AND password = ?", uid, oldPassword).Update(map[string]interface{}{"password": newPassword})
+		if !database.Table("users").Where("username = ?", uid).First(&user).RecordNotFound() {
+			passwordVerified := checkPasswordHash(oldPassword, user.Password)
+			if passwordVerified {
+				database.Table("users").Where("username = ?", uid).Update(map[string]interface{}{"password": HashPassword(newPassword)})
+			}
 		} else {
 			return errors.New("user doesn't exist")
 		}
 	} else if suid == "email" {
 		var user User
-		if !database.Table("users").Where("mail = ? AND password = ?", uid, oldPassword).First(&user).RecordNotFound() {
-			database.Table("users").Where("mail = ? AND password = ?", uid, oldPassword).Update(map[string]interface{}{"password": newPassword})
+		if !database.Table("users").Where("mail = ?", uid).First(&user).RecordNotFound() {
+			passwordVerified := checkPasswordHash(oldPassword, user.Password)
+			if passwordVerified {
+				database.Table("users").Where("mail = ?", uid).Update(map[string]interface{}{"password": HashPassword(newPassword)})
+			}
 		} else {
 			return errors.New("user doesn't exist")
 		}

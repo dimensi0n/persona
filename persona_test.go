@@ -27,7 +27,7 @@ func TestSignup(t *testing.T) {
 
 	Config(db, "username")
 
-	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+	user := User{Username: "Erwan", Password: HashPassword("0000"), Mail: "e@e.e"}
 	err = Signup(&user, user.Username, w)
 	if err != nil {
 		t.Error(err)
@@ -136,7 +136,7 @@ func TestRecoverPassword(t *testing.T) {
 	var updatedUser User
 	db.Table("users").Where("username = ?", user.Username).First(&updatedUser)
 
-	if updatedUser.Password != "0001" {
+	if !checkPasswordHash("0001", updatedUser.Password) {
 		t.Error(errors.New("password wasn't changed"))
 	}
 }
