@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/gitote.in/dimensi0n/persona?status.svg)](https://godoc.org/gitote.in/dimensi0n/persona)
 [![GoReport](https://goreportcard.com/badge/gitote.in/dimensi0n/persona)](https://goreportcard.com/report/gitote.in/dimensi0n/persona)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://gitote.in/dimensi0n/persona/src/master/LICENSE)
+[![GoLang](https://img.shields.io/badge/GoLang-v1.12-yellowgreen.svg?logo=go&maxAge=3600)](https://golang.org)
 
 > User management library written in Go
 
@@ -70,7 +71,7 @@ persona.Config(db, "email")
 ### Signup
 
 ```golang
-user := User{"Username", "Pasword", "mail@mail.com"}
+user := User{"Username", HashPassword("Pasword"), "mail@mail.com"}
 err := persona.Signup(&user, user.Username, w) // &user is the struct to save && w is the response writer
 if err := nil {
     // There is an error while attempting to signup the user 
@@ -99,13 +100,13 @@ if err := nil {
 
 ```golang
 // Username/Password
-user := User{Username: "Username", Password: "Password"}
+user := User{Username: "Username"}
 err := persona.Logout(user.Username, w) // w is the response writer
 if err := nil {
     // There is an error while attempting to logout the user 
 }
 
-user := User{Mail: "mail@mail.com", Password: "Password"}
+user := User{Mail: "mail@mail.com"}
 err := persona.Logout(user.Mail, w) // w is the response writer
 if err := nil {
     // There is an error while attempting to logout the user 
