@@ -1,4 +1,4 @@
-module gitote.in/dimensi0n/persona
+module github.com/dimensi0n/persona
 
 require (
 	github.com/jinzhu/gorm v1.9.1
