@@ -4,9 +4,6 @@ language: go
 
 sudo: false
 
-install:
-  - # Skip
-
 script:
   - go get -t -v ./...
   - diff -u <(echo -n) <(gofmt -d .)
