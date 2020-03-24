@@ -10,7 +10,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-func TestSignup(t *testing.T) {
+func TestSignupWithUsername(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
@@ -39,7 +39,7 @@ func TestSignup(t *testing.T) {
 	}
 }
 
-func TestLogout(t *testing.T) {
+func TestLogoutWithUsername(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	db, err := gorm.Open("sqlite3", "test.db")
@@ -63,7 +63,60 @@ func TestLogout(t *testing.T) {
 	}
 }
 
-func TestLogin(t *testing.T) {
+func TestSignupWithEmail(t *testing.T) {
+
+	w := httptest.NewRecorder()
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	db.DropTable(&User{})
+	db.DropTable(&Sessionusername{})
+
+	db.AutoMigrate(&User{})
+
+	Config(db, "email")
+
+	user := User{Username: "Erwan", Password: HashPassword("0000"), Mail: "e@e.e"}
+	err = Signup(&user, user.Mail, w)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp := w.Result()
+	if resp.Cookies()[0].Value == "" {
+		t.Error(errors.New("no session cookie"))
+	}
+}
+
+func TestLogoutWithEmail(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	Config(db, "email")
+
+	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+
+	err = Logout(user.Mail, w)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp := w.Result()
+	if resp.Cookies()[0].Value != "" {
+		t.Error(errors.New("cookie was not deleted"))
+	}
+}
+
+func TestLoginWithUsername(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
@@ -78,6 +131,31 @@ func TestLogin(t *testing.T) {
 	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
 
 	err = Login(user.Username, user.Password, w)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp := w.Result()
+	if resp.Cookies()[0].Value == "" {
+		t.Error(errors.New("no session cookie"))
+	}
+}
+
+func TestLoginWithEmail(t *testing.T) {
+
+	w := httptest.NewRecorder()
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	Config(db, "email")
+
+	user := User{Username: "Erwan", Password: "0000", Mail: "e@e.e"}
+
+	err = Login(user.Mail, user.Password, w)
 	if err != nil {
 		t.Error(err)
 	}
